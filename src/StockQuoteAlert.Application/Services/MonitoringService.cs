@@ -25,7 +25,7 @@ namespace StockQuoteAlert.Application.Services
             _monitoringIntervalSeconds = monitoringIntervalSeconds > 0 ? monitoringIntervalSeconds : throw new ArgumentException("Intervalo deve ser maior que zero.", nameof(monitoringIntervalSeconds));
         }
 
-        public async Task StartMonitoringAsync(MonitoredAssetDto dto)
+        public async Task StartMonitoringAsync(MonitoredAssetDto dto, CancellationToken cancellationToken = default)
         {
             if (dto == null)
             {
@@ -37,12 +37,12 @@ namespace StockQuoteAlert.Application.Services
             {
                 throw new ArgumentException("Ticker não pode ser vazio", nameof(dto));
             }
-            
+
             if (dto.BuyThreshold <= 0)
             {
                 throw new ArgumentException("Limite de compra deve ser maior que zero", nameof(dto));
             }
-            
+
             if (dto.SellThreshold <= 0)
             {
                 throw new ArgumentException("Limite de venda deve ser maior que zero", nameof(dto));
@@ -55,7 +55,11 @@ namespace StockQuoteAlert.Application.Services
             Console.WriteLine($"Preço de referência para compra: {asset.BuyThreshold}");
             Console.WriteLine(new string('-', 50));
 
-            while (true)
+            // Variáveis para controlar os alertas
+            bool buyAlertSent = false;
+            bool sellAlertSent = false;
+
+            while (!cancellationToken.IsCancellationRequested)
             {
                 try
                 {
@@ -64,16 +68,34 @@ namespace StockQuoteAlert.Application.Services
 
                     Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] {asset.Ticker}: {currentPrice:C}");
 
+                    // Alerta de compra
                     if (asset.ShouldTriggerBuyAlert())
                     {
-                        await SendBuyAlertAsync(asset);
+                        if (!buyAlertSent)
+                        {
+                            await SendBuyAlertAsync(asset);
+                            buyAlertSent = true;
+                            sellAlertSent = false; // Resetar o alerta de venda
+                        }
                     }
+                    // Alerta de venda
                     else if (asset.ShouldTriggerSellAlert())
                     {
-                        await SendSellAlertAsync(asset);
+                        if (!sellAlertSent)
+                        {
+                            await SendSellAlertAsync(asset);
+                            sellAlertSent = true;
+                            buyAlertSent = false; // Resetar o alerta de compra
+                        }
+                    }
+                    // Resetar os alertas quando o preço estiver entre os limites
+                    else
+                    {
+                        buyAlertSent = false;
+                        sellAlertSent = false;
                     }
 
-                    await Task.Delay(TimeSpan.FromSeconds(_monitoringIntervalSeconds));
+                    await Task.Delay(TimeSpan.FromSeconds(_monitoringIntervalSeconds), cancellationToken);
                 }
                 catch (OperationCanceledException)
                 {
@@ -83,7 +105,7 @@ namespace StockQuoteAlert.Application.Services
                 catch (Exception ex)
                 {
                     Console.WriteLine($"Erro ao monitorar {asset.Ticker}: {ex.Message}");
-                    await Task.Delay(TimeSpan.FromSeconds(_monitoringIntervalSeconds));
+                    await Task.Delay(TimeSpan.FromSeconds(_monitoringIntervalSeconds), cancellationToken);
                 }
             }
         }
