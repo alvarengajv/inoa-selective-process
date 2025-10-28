@@ -11,4 +11,8 @@
     <ProjectReference Include="..\StockQuoteAlert.Domain\StockQuoteAlert.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="YahooFinanceApi" Version="2.3.3" />
+  </ItemGroup>
+
 </Project>
