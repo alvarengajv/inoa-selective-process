@@ -24,7 +24,7 @@ namespace StockQuoteAlert.Api
                 }
 
                 var ticker = args[0];
-                
+
                 if (!decimal.TryParse(args[1], out var sellThreshold))
                 {
                     Console.WriteLine($"Erro: O preço de venda '{args[1]}' não é um número válido.");
@@ -59,7 +59,7 @@ namespace StockQuoteAlert.Api
                     cts.Cancel();
                 };
 
-                await monitoringService.StartMonitoringAsync(assetDto);
+                await monitoringService.StartMonitoringAsync(assetDto, cts.Token);
 
                 return 0;
             }
