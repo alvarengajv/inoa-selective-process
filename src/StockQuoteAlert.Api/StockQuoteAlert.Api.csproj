@@ -7,4 +7,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\StockQuoteAlert.Application\StockQuoteAlert.Application.csproj" />
+    <ProjectReference Include="..\StockQuoteAlert.Domain\StockQuoteAlert.Domain.csproj" />
+    <ProjectReference Include="..\StockQuoteAlert.Infrastructure\StockQuoteAlert.Infrastructure.csproj" />
+  </ItemGroup>
+
 </Project>
