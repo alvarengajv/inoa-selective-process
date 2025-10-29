@@ -18,8 +18,8 @@ namespace StockQuoteAlert.Console
             {
                 if (args.Length < 3)
                 {
-                    Console.WriteLine("Uso: StockQuoteAlert <ticker> <preço_venda> <preço_compra>");
-                    Console.WriteLine("Exemplo: StockQuoteAlert PETR4.SA 30.50 28.00");
+                    System.Console.WriteLine("Uso: StockQuoteAlert <ticker> <preço_venda> <preço_compra>");
+                    System.Console.WriteLine("Exemplo: StockQuoteAlert PETR4.SA 30.50 28.00");
                     return 1;
                 }
 
@@ -27,13 +27,13 @@ namespace StockQuoteAlert.Console
 
                 if (!decimal.TryParse(args[1], out var sellThreshold))
                 {
-                    Console.WriteLine($"Erro: O preço de venda '{args[1]}' não é um número válido.");
+                    System.Console.WriteLine($"Erro: O preço de venda '{args[1]}' não é um número válido.");
                     return 1;
                 }
 
                 if (!decimal.TryParse(args[2], out var buyThreshold))
                 {
-                    Console.WriteLine($"Erro: O preço de compra '{args[2]}' não é um número válido.");
+                    System.Console.WriteLine($"Erro: O preço de compra '{args[2]}' não é um número válido.");
                     return 1;
                 }
 
@@ -48,13 +48,13 @@ namespace StockQuoteAlert.Console
                     SellThreshold = sellThreshold
                 };
 
-                Console.WriteLine("=== Stock Quote Alert ===");
-                Console.WriteLine("Pressione Ctrl+C para encerrar o monitoramento.\n");
+                System.Console.WriteLine("=== Stock Quote Alert ===");
+                System.Console.WriteLine("Pressione Ctrl+C para encerrar o monitoramento.\n");
 
                 using var cts = new CancellationTokenSource();
-                Console.CancelKeyPress += (sender, e) =>
+                System.Console.CancelKeyPress += (sender, e) =>
                 {
-                    Console.WriteLine("\nEncerrando monitoramento...");
+                    System.Console.WriteLine("\nEncerrando monitoramento...");
                     e.Cancel = true;
                     cts.Cancel();
                 };
@@ -65,7 +65,7 @@ namespace StockQuoteAlert.Console
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Erro fatal: {ex.Message}");
+                System.Console.WriteLine($"Erro fatal: {ex.Message}");
                 return 1;
             }
         }
