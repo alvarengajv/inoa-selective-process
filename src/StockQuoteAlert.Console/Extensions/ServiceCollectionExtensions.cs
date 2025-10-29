@@ -8,7 +8,7 @@ using StockQuoteAlert.Application.Interfaces;
 using StockQuoteAlert.Application.Services;
 using StockQuoteAlert.Infrastructure.ExternalServices;
 
-namespace StockQuoteAlert.Api.Extensions
+namespace StockQuoteAlert.Console.Extensions
 {
     public static class ServiceCollectionExtensions
     {
