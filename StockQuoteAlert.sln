@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockQuoteAlert.Application
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockQuoteAlert.Infrastructure", "src\StockQuoteAlert.Infrastructure\StockQuoteAlert.Infrastructure.csproj", "{F4DABA43-6E8E-4E04-92F7-22BBCEA3B812}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockQuoteAlert.Api", "src\StockQuoteAlert.Api\StockQuoteAlert.Api.csproj", "{87647F63-DAED-48D5-ABAD-8C70D18D87F3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StockQuoteAlert.Console", "src\StockQuoteAlert.Console\StockQuoteAlert.Console.csproj", "{87647F63-DAED-48D5-ABAD-8C70D18D87F3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
