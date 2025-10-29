@@ -4,11 +4,11 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using StockQuoteAlert.Api.Extensions;
+using StockQuoteAlert.Console.Extensions;
 using StockQuoteAlert.Application.DTOs;
 using StockQuoteAlert.Application.Interfaces;
 
-namespace StockQuoteAlert.Api
+namespace StockQuoteAlert.Console
 {
     internal class Program
     {
