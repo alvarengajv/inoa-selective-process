@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using Microsoft.Extensions.Configuration;
@@ -7,6 +7,7 @@ using StockQuoteAlert.Domain.Interfaces;
 using StockQuoteAlert.Application.Interfaces;
 using StockQuoteAlert.Application.Services;
 using StockQuoteAlert.Infrastructure.ExternalServices;
+using Microsoft.Extensions.Logging;
 
 namespace StockQuoteAlert.Console.Extensions
 {
@@ -20,7 +21,8 @@ namespace StockQuoteAlert.Console.Extensions
             {
                 var quoteService = provider.GetRequiredService<IQuoteService>();
                 var emailService = provider.GetRequiredService<IEmailService>();
-                return new MonitoringService(emailService, quoteService, intervalSeconds);
+                var logger = provider.GetRequiredService<ILogger<MonitoringService>>();
+                return new MonitoringService(emailService, quoteService, intervalSeconds, logger);
             });
 
             return services;
