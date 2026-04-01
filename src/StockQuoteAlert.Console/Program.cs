@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Configuration;
@@ -75,7 +75,9 @@ namespace StockQuoteAlert.Console
                 .ConfigureAppConfiguration((context, config) =>
                 {
                     config.SetBasePath(AppContext.BaseDirectory)
-                          .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
+                          .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                          .AddEnvironmentVariables()
+                          .AddUserSecrets<Program>(optional: true);
                 })
                 .ConfigureServices((context, services) =>
                 {
