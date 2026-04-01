@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using StockQuoteAlert.Domain.Entities;
 using StockQuoteAlert.Domain.Interfaces;
 using StockQuoteAlert.Application.DTOs;
 using StockQuoteAlert.Application.Interfaces;
+using Microsoft.Extensions.Logging;
 
 
 namespace StockQuoteAlert.Application.Services
@@ -14,15 +15,18 @@ namespace StockQuoteAlert.Application.Services
         private readonly IEmailService _emailService;
         private readonly IQuoteService _quoteService;
         private readonly int _monitoringIntervalSeconds;
+        private readonly ILogger<MonitoringService> _logger;
 
         public MonitoringService(
             IEmailService emailService,
             IQuoteService quoteService,
-            int monitoringIntervalSeconds)
+            int monitoringIntervalSeconds,
+            ILogger<MonitoringService> logger)
         {
             _emailService = emailService ?? throw new ArgumentNullException(nameof(emailService));
             _quoteService = quoteService ?? throw new ArgumentNullException(nameof(quoteService));
             _monitoringIntervalSeconds = monitoringIntervalSeconds > 0 ? monitoringIntervalSeconds : throw new ArgumentException("Intervalo deve ser maior que zero.", nameof(monitoringIntervalSeconds));
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         }
 
         public async Task StartMonitoringAsync(MonitoredAssetDto dto, CancellationToken cancellationToken = default)
@@ -50,10 +54,10 @@ namespace StockQuoteAlert.Application.Services
 
             var asset = MonitoredAsset.Create(dto.Ticker, dto.BuyThreshold, dto.SellThreshold);
 
-            Console.WriteLine($"Ativo a ser monitorado: {asset.Ticker}");
-            Console.WriteLine($"Preço de referência para venda: {asset.SellThreshold}");
-            Console.WriteLine($"Preço de referência para compra: {asset.BuyThreshold}");
-            Console.WriteLine(new string('-', 50));
+            _logger.LogInformation("Ativo a ser monitorado: {Ticker}", asset.Ticker);
+            _logger.LogInformation("Preço de referência para venda: {SellThreshold}", asset.SellThreshold);
+            _logger.LogInformation("Preço de referência para compra: {BuyThreshold}", asset.BuyThreshold);
+            _logger.LogInformation("{Separator}", new string('-', 50));
 
             // Variáveis para controlar os alertas
             bool buyAlertSent = false;
@@ -66,7 +70,7 @@ namespace StockQuoteAlert.Application.Services
                     var currentPrice = await _quoteService.GetQuoteAsync(asset.Ticker);
                     asset.UpdatePrice(currentPrice);
 
-                    Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] {asset.Ticker}: {currentPrice:C}");
+                    _logger.LogInformation("[{Time}] {Ticker}: {CurrentPrice:C}", DateTime.Now.ToString("HH:mm:ss"), asset.Ticker, currentPrice);
 
                     // Alerta de compra
                     if (asset.ShouldTriggerBuyAlert())
@@ -99,12 +103,12 @@ namespace StockQuoteAlert.Application.Services
                 }
                 catch (OperationCanceledException)
                 {
-                    Console.WriteLine($"\nMonitoramento de {asset.Ticker} cancelado.");
+                    _logger.LogInformation("\nMonitoramento de {Ticker} cancelado.", asset.Ticker);
                     break;
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Erro ao monitorar {asset.Ticker}: {ex.Message}");
+                    _logger.LogError(ex, "Erro ao monitorar {Ticker}: {Message}", asset.Ticker, ex.Message);
                     await Task.Delay(TimeSpan.FromSeconds(_monitoringIntervalSeconds), cancellationToken);
                 }
             }
@@ -118,7 +122,7 @@ namespace StockQuoteAlert.Application.Services
                        $"Considere comprar!";
 
             await _emailService.SendAlertAsync(subject, body);
-            Console.WriteLine($"✓ Alerta de COMPRA enviado para {asset.Ticker}");
+            _logger.LogInformation("✓ Alerta de COMPRA enviado para {Ticker}", asset.Ticker);
         }
 
         private async Task SendSellAlertAsync(MonitoredAsset asset)
@@ -129,7 +133,7 @@ namespace StockQuoteAlert.Application.Services
                        $"Considere vender!";
 
             await _emailService.SendAlertAsync(subject, body);
-            Console.WriteLine($"✓ Alerta de VENDA enviado para {asset.Ticker}");
+            _logger.LogInformation("✓ Alerta de VENDA enviado para {Ticker}", asset.Ticker);
         }
     }
 }
