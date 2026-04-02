@@ -1,22 +1,19 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using StockQuoteAlert.Domain.Interfaces;
+using Microsoft.Extensions.Logging;
 using StockQuoteAlert.Application.Interfaces;
 using StockQuoteAlert.Application.Services;
+using StockQuoteAlert.Domain.Interfaces;
 using StockQuoteAlert.Infrastructure.ExternalServices;
-using Microsoft.Extensions.Logging;
 
 namespace StockQuoteAlert.Console.Extensions
 {
     public static class ServiceCollectionExtensions
     {
-         public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
+        public static IServiceCollection AddApplicationServices(this IServiceCollection services, IConfiguration configuration)
         {
             var intervalSeconds = configuration.GetValue<int>("MonitoringSettings:IntervalSeconds");
-            
+
             services.AddSingleton<IMonitoringService>(provider =>
             {
                 var quoteService = provider.GetRequiredService<IQuoteService>();
@@ -41,7 +38,7 @@ namespace StockQuoteAlert.Console.Extensions
                 var enableSsl = configuration.GetValue<bool>("EmailSettings:EnableSsl");
                 var recipientEmail = configuration["EmailSettings:RecipientEmail"];
 
-                return new EmailService(smtpServer, smtpPort, username, password, enableSsl, recipientEmail);
+                return new EmailService(smtpServer!, smtpPort, username!, password!, enableSsl, recipientEmail!);
             });
 
             return services;
