@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace StockQuoteAlert.Domain.Interfaces
+namespace StockQuoteAlert.Application.Interfaces
 {
     public interface IQuoteService
     {

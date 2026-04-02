@@ -3,7 +3,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using StockQuoteAlert.Application.Interfaces;
 using StockQuoteAlert.Application.Services;
-using StockQuoteAlert.Domain.Interfaces;
 using StockQuoteAlert.Infrastructure.ExternalServices;
 
 namespace StockQuoteAlert.Console.Extensions
