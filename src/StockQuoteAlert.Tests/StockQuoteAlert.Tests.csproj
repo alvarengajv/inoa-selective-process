@@ -18,8 +18,10 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="FluentAssertions" Version="6.12.2" />
+    <PackageReference Include="Moq" Version="4.20.72" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\StockQuoteAlert.Domain\StockQuoteAlert.Domain.csproj" />
+    <ProjectReference Include="..\StockQuoteAlert.Application\StockQuoteAlert.Application.csproj" />
   </ItemGroup>
 </Project>
