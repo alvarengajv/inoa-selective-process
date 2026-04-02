@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using StockQuoteAlert.Domain.Entities;
-using StockQuoteAlert.Domain.Interfaces;
 using StockQuoteAlert.Application.DTOs;
 using StockQuoteAlert.Application.Interfaces;
 using Microsoft.Extensions.Logging;

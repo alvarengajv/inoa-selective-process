@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
-using StockQuoteAlert.Domain.Interfaces;
+using StockQuoteAlert.Application.Interfaces;
 using YahooFinanceApi;
 
 namespace StockQuoteAlert.Infrastructure.ExternalServices

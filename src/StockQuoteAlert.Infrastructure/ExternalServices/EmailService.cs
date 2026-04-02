@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using System.Net.Mail;
 using System.Net;
 using System.Threading;
-using StockQuoteAlert.Domain.Interfaces;
+using StockQuoteAlert.Application.Interfaces;
 
 namespace StockQuoteAlert.Infrastructure.ExternalServices
 {
