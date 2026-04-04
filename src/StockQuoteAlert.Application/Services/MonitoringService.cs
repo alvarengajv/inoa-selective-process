@@ -35,22 +35,6 @@ namespace StockQuoteAlert.Application.Services
                 throw new ArgumentNullException(nameof(dto));
             }
 
-            // Validação básica dos dados do DTO
-            if (string.IsNullOrWhiteSpace(dto.Ticker))
-            {
-                throw new ArgumentException("Ticker não pode ser vazio", nameof(dto));
-            }
-
-            if (dto.BuyThreshold <= 0)
-            {
-                throw new ArgumentException("Limite de compra deve ser maior que zero", nameof(dto));
-            }
-
-            if (dto.SellThreshold <= 0)
-            {
-                throw new ArgumentException("Limite de venda deve ser maior que zero", nameof(dto));
-            }
-
             var asset = MonitoredAsset.Create(dto.Ticker, dto.BuyThreshold, dto.SellThreshold);
 
             _logger.LogInformation("Ativo a ser monitorado: {Ticker}", asset.Ticker);

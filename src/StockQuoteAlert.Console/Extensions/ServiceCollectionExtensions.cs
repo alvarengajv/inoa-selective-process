@@ -26,6 +26,7 @@ namespace StockQuoteAlert.Console.Extensions
 
         public static IServiceCollection AddInfrastructureServices(this IServiceCollection services, IConfiguration configuration)
         {
+            services.AddSingleton<IYahooFinanceClient, YahooFinanceClientAdapter>();
             services.AddSingleton<IQuoteService, QuoteService>();
 
             services.AddSingleton<IEmailService>(provider =>
