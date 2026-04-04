@@ -1,6 +1,5 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 using StockQuoteAlert.Application.Interfaces;
 using YahooFinanceApi;
@@ -9,6 +8,13 @@ namespace StockQuoteAlert.Infrastructure.ExternalServices
 {
     public class QuoteService : IQuoteService
     {
+        private readonly IYahooFinanceClient _yahooClient;
+
+        public QuoteService(IYahooFinanceClient yahooClient)
+        {
+            _yahooClient = yahooClient ?? throw new ArgumentNullException(nameof(yahooClient));
+        }
+
         public async Task<decimal> GetQuoteAsync(string ticker)
         {
             if (string.IsNullOrWhiteSpace(ticker))
@@ -16,20 +22,26 @@ namespace StockQuoteAlert.Infrastructure.ExternalServices
 
             try
             {
-                var securities = await Yahoo
-                    .Symbols(ticker)
-                    .Fields(Field.Symbol, Field.RegularMarketPrice)
-                    .QueryAsync();
+                var securities = await _yahooClient.QueryAsync(ticker);
 
                 if (!securities.ContainsKey(ticker))
                     throw new InvalidOperationException($"Não foi possível encontrar dados para o ticker {ticker}.");
 
                 var security = securities[ticker];
-                var price = security[Field.RegularMarketPrice];
-                decimal priceDecimal = 0;
+                dynamic price = security[Field.RegularMarketPrice];
 
-                if (price == null || !decimal.TryParse(price.ToString(), out priceDecimal))
+                if (price == null)
                     throw new InvalidOperationException($"Preço inválido retornado para o ticker {ticker}.");
+
+                decimal priceDecimal;
+                try
+                {
+                    priceDecimal = (decimal)(double)price;
+                }
+                catch
+                {
+                    throw new InvalidOperationException($"Preço inválido retornado para o ticker {ticker}.");
+                }
 
                 return priceDecimal;
             }
