@@ -1,16 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
-using System.Net.Mail;
-using System.Net;
-using System.Threading;
+using MimeKit;
+using MailKit.Net.Smtp;
+using MailKit.Security;
 using StockQuoteAlert.Application.Interfaces;
 
 namespace StockQuoteAlert.Infrastructure.ExternalServices
 {
     public class EmailService : IEmailService
-{
+    {
         private readonly string _smtpServer;
         private readonly int _smtpPort;
         private readonly string _username;
@@ -34,6 +32,18 @@ namespace StockQuoteAlert.Infrastructure.ExternalServices
             _recipientEmail = recipientEmail ?? throw new ArgumentNullException(nameof(recipientEmail));
         }
 
+        public async Task ValidateSmtpConfigurationAsync()
+        {
+            using var client = new SmtpClient();
+            var secureSocketOptions = _enableSsl
+                ? SecureSocketOptions.StartTls
+                : SecureSocketOptions.None;
+
+            await client.ConnectAsync(_smtpServer, _smtpPort, secureSocketOptions);
+            await client.AuthenticateAsync(_username, _password);
+            await client.DisconnectAsync(true);
+        }
+
         public async Task SendAlertAsync(string subject, string body)
         {
             if (string.IsNullOrWhiteSpace(subject))
@@ -44,25 +54,21 @@ namespace StockQuoteAlert.Infrastructure.ExternalServices
 
             try
             {
-                using var mailMessage = new MailMessage
-                {
-                    From = new MailAddress(_username),
-                    Subject = subject,
-                    Body = body,
-                    IsBodyHtml = false
-                };
+                var message = new MimeMessage();
+                message.From.Add(MailboxAddress.Parse(_username));
+                message.To.Add(MailboxAddress.Parse(_recipientEmail));
+                message.Subject = subject;
+                message.Body = new TextPart("plain") { Text = body };
 
-                mailMessage.To.Add(_recipientEmail);
+                using var client = new SmtpClient();
+                var secureSocketOptions = _enableSsl
+                    ? SecureSocketOptions.StartTls
+                    : SecureSocketOptions.None;
 
-                using var smtpClient = new SmtpClient(_smtpServer)
-                {
-                    Port = _smtpPort,
-                    UseDefaultCredentials = false,
-                    Credentials = new NetworkCredential(_username, _password),
-                    EnableSsl = _enableSsl
-                };
-
-                await smtpClient.SendMailAsync(mailMessage);
+                await client.ConnectAsync(_smtpServer, _smtpPort, secureSocketOptions);
+                await client.AuthenticateAsync(_username, _password);
+                await client.SendAsync(message);
+                await client.DisconnectAsync(true);
             }
             catch (Exception ex)
             {
