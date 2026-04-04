@@ -39,6 +39,20 @@ namespace StockQuoteAlert.Console
 
                 var host = CreateHostBuilder(args).Build();
 
+                var emailService = host.Services.GetRequiredService<IEmailService>();
+                try
+                {
+                    System.Console.WriteLine("Validando configuração SMTP...");
+                    await emailService.ValidateSmtpConfigurationAsync();
+                    System.Console.WriteLine("Configuração SMTP válida.\n");
+                }
+                catch (Exception ex)
+                {
+                    System.Console.WriteLine($"Erro na configuração SMTP: {ex.Message}");
+                    System.Console.WriteLine("Verifique as configurações de e-mail no appsettings.json.");
+                    return 1;
+                }
+
                 var monitoringService = host.Services.GetRequiredService<IMonitoringService>();
 
                 var assetDto = new MonitoredAssetDto
@@ -74,8 +88,10 @@ namespace StockQuoteAlert.Console
             Host.CreateDefaultBuilder(args)
                 .ConfigureAppConfiguration((context, config) =>
                 {
+                    var env = context.HostingEnvironment.EnvironmentName;
                     config.SetBasePath(AppContext.BaseDirectory)
                           .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                          .AddJsonFile($"appsettings.{env}.json", optional: true, reloadOnChange: true)
                           .AddEnvironmentVariables()
                           .AddUserSecrets<Program>(optional: true);
                 })
