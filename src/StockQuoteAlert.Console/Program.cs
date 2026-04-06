@@ -14,12 +14,17 @@ namespace StockQuoteAlert.Console
     {
         static async Task<int> Main(string[] args)
         {
+            var writer = new ConsoleWriter();
+
             try
             {
                 if (args.Length < 3)
                 {
-                    System.Console.WriteLine("Uso: StockQuoteAlert <ticker> <preço_venda> <preço_compra>");
-                    System.Console.WriteLine("Exemplo: StockQuoteAlert PETR4.SA 30.50 28.00");
+                    writer.WriteError("Argumentos insuficientes.");
+                    System.Console.ForegroundColor = ConsoleColor.White;
+                    System.Console.WriteLine("  Uso     : StockQuoteAlert <ticker> <preço_venda> <preço_compra>");
+                    System.Console.WriteLine("  Exemplo : StockQuoteAlert PETR4.SA 30.50 28.00");
+                    System.Console.ResetColor();
                     return 1;
                 }
 
@@ -27,29 +32,33 @@ namespace StockQuoteAlert.Console
 
                 if (!decimal.TryParse(args[1], out var sellThreshold))
                 {
-                    System.Console.WriteLine($"Erro: O preço de venda '{args[1]}' não é um número válido.");
+                    writer.WriteError($"O preço de venda '{args[1]}' não é um número válido.");
                     return 1;
                 }
 
                 if (!decimal.TryParse(args[2], out var buyThreshold))
                 {
-                    System.Console.WriteLine($"Erro: O preço de compra '{args[2]}' não é um número válido.");
+                    writer.WriteError($"O preço de compra '{args[2]}' não é um número válido.");
                     return 1;
                 }
 
                 var host = CreateHostBuilder(args).Build();
 
                 var emailService = host.Services.GetRequiredService<IEmailService>();
+
                 try
                 {
-                    System.Console.WriteLine("Validando configuração SMTP...");
+                    writer.WriteInfo("Validando configuração SMTP...");
                     await emailService.ValidateSmtpConfigurationAsync();
-                    System.Console.WriteLine("Configuração SMTP válida.\n");
+                    writer.WriteSuccess("Configuração SMTP válida.");
+                    System.Console.WriteLine();
                 }
                 catch (Exception ex)
                 {
-                    System.Console.WriteLine($"Erro na configuração SMTP: {ex.Message}");
-                    System.Console.WriteLine("Verifique as configurações de e-mail no appsettings.json.");
+                    writer.WriteError($"Configuração SMTP inválida: {ex.Message}");
+                    System.Console.ForegroundColor = ConsoleColor.DarkGray;
+                    System.Console.WriteLine("  Verifique as configurações de e-mail no appsettings.json.");
+                    System.Console.ResetColor();
                     return 1;
                 }
 
@@ -62,13 +71,18 @@ namespace StockQuoteAlert.Console
                     SellThreshold = sellThreshold
                 };
 
-                System.Console.WriteLine("=== Stock Quote Alert ===");
-                System.Console.WriteLine("Pressione Ctrl+C para encerrar o monitoramento.\n");
+                writer.WriteHeader(ticker, buyThreshold, sellThreshold);
+
+                System.Console.ForegroundColor = ConsoleColor.DarkGray;
+                System.Console.WriteLine("  Pressione Ctrl+C para encerrar o monitoramento.");
+                System.Console.ResetColor();
 
                 using var cts = new CancellationTokenSource();
                 System.Console.CancelKeyPress += (sender, e) =>
                 {
+                    System.Console.ForegroundColor = ConsoleColor.Cyan;
                     System.Console.WriteLine("\nEncerrando monitoramento...");
+                    System.Console.ResetColor();
                     e.Cancel = true;
                     cts.Cancel();
                 };
@@ -79,7 +93,7 @@ namespace StockQuoteAlert.Console
             }
             catch (Exception ex)
             {
-                System.Console.WriteLine($"Erro fatal: {ex.Message}");
+                writer.WriteError($"Erro fatal: {ex.Message}");
                 return 1;
             }
         }
