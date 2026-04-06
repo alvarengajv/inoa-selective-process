@@ -24,7 +24,7 @@ src/
 │   └── Entities/
 │       └── MonitoredAsset.cs
 │
-├── StockQuoteAlert.Application/       # Casos de uso e interfaces
+├── StockQuoteAlert.Application/       # Interfaces, DTOs e Serviços
 │   ├── DTOs/
 │   ├── Interfaces/
 │   │   ├── IMonitoringService.cs
