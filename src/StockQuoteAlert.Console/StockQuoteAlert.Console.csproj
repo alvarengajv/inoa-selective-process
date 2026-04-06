@@ -1,11 +1,11 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <OutputType>Exe</OutputType>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <AssemblyName>StockQuoteAlert.Console</AssemblyName>
+    <AssemblyName>stock-quote-alert</AssemblyName>
     <RootNamespace>StockQuoteAlert.Console</RootNamespace>
     <UserSecretsId>4a51ffb2-e817-4a7e-9ab8-b54eb617674e</UserSecretsId>
   </PropertyGroup>

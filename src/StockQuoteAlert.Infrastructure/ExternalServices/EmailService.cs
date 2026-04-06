@@ -34,14 +34,7 @@ namespace StockQuoteAlert.Infrastructure.ExternalServices
 
         public async Task ValidateSmtpConfigurationAsync()
         {
-            using var client = new SmtpClient();
-            var secureSocketOptions = _enableSsl
-                ? SecureSocketOptions.StartTls
-                : SecureSocketOptions.None;
-
-            await client.ConnectAsync(_smtpServer, _smtpPort, secureSocketOptions);
-            await client.AuthenticateAsync(_username, _password);
-            await client.DisconnectAsync(true);
+            await ExecuteWithSmtpClientAsync(_ => Task.CompletedTask);
         }
 
         public async Task SendAlertAsync(string subject, string body)
@@ -60,20 +53,25 @@ namespace StockQuoteAlert.Infrastructure.ExternalServices
                 message.Subject = subject;
                 message.Body = new TextPart("plain") { Text = body };
 
-                using var client = new SmtpClient();
-                var secureSocketOptions = _enableSsl
-                    ? SecureSocketOptions.StartTls
-                    : SecureSocketOptions.None;
-
-                await client.ConnectAsync(_smtpServer, _smtpPort, secureSocketOptions);
-                await client.AuthenticateAsync(_username, _password);
-                await client.SendAsync(message);
-                await client.DisconnectAsync(true);
+                await ExecuteWithSmtpClientAsync(client => client.SendAsync(message));
             }
             catch (Exception ex)
             {
                 throw new InvalidOperationException($"Erro ao enviar e-mail: {ex.Message}", ex);
             }
+        }
+
+        private async Task ExecuteWithSmtpClientAsync(Func<SmtpClient, Task> action)
+        {
+            using var client = new SmtpClient();
+            var secureSocketOptions = _enableSsl
+                ? SecureSocketOptions.StartTls
+                : SecureSocketOptions.None;
+
+            await client.ConnectAsync(_smtpServer, _smtpPort, secureSocketOptions);
+            await client.AuthenticateAsync(_username, _password);
+            await action(client);
+            await client.DisconnectAsync(true);
         }
     }
 }
