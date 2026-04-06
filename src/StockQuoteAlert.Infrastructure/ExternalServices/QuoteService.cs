@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 using StockQuoteAlert.Application.Interfaces;
 using YahooFinanceApi;
 
@@ -24,26 +22,14 @@ namespace StockQuoteAlert.Infrastructure.ExternalServices
             {
                 var securities = await _yahooClient.QueryAsync(ticker);
 
-                if (!securities.ContainsKey(ticker))
+                if (!securities.TryGetValue(ticker, out var security))
                     throw new InvalidOperationException($"Não foi possível encontrar dados para o ticker {ticker}.");
-
-                var security = securities[ticker];
                 dynamic price = security[Field.RegularMarketPrice];
 
                 if (price == null)
                     throw new InvalidOperationException($"Preço inválido retornado para o ticker {ticker}.");
 
-                decimal priceDecimal;
-                try
-                {
-                    priceDecimal = (decimal)(double)price;
-                }
-                catch
-                {
-                    throw new InvalidOperationException($"Preço inválido retornado para o ticker {ticker}.");
-                }
-
-                return priceDecimal;
+                return (decimal)(double)price;
             }
             catch (Exception ex) when (ex is not InvalidOperationException)
             {

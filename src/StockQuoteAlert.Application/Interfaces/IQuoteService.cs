@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace StockQuoteAlert.Application.Interfaces
+﻿namespace StockQuoteAlert.Application.Interfaces
 {
     public interface IQuoteService
     {
