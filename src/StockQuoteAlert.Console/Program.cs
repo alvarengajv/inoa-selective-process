@@ -21,14 +21,17 @@ namespace StockQuoteAlert.Console
                 if (args.Length < 3)
                 {
                     writer.WriteError("Argumentos insuficientes.");
-                    System.Console.ForegroundColor = ConsoleColor.White;
-                    System.Console.WriteLine("  Uso     : StockQuoteAlert <ticker> <preço_venda> <preço_compra>");
-                    System.Console.WriteLine("  Exemplo : StockQuoteAlert PETR4.SA 30.50 28.00");
-                    System.Console.ResetColor();
+                    writer.WriteUsage();
                     return 1;
                 }
 
                 var ticker = args[0];
+
+                if (!ticker.EndsWith(".SA", StringComparison.OrdinalIgnoreCase))
+                {
+                    ticker = $"{ticker}.SA";
+                    writer.WriteHint($"Sufixo .SA adicionado automaticamente: {ticker}");
+                }
 
                 if (!decimal.TryParse(args[1], out var sellThreshold))
                 {
@@ -42,6 +45,13 @@ namespace StockQuoteAlert.Console
                     return 1;
                 }
 
+                if (sellThreshold <= buyThreshold)
+                {
+                    writer.WriteError("O preço de venda deve ser maior que o preço de compra.");
+                    writer.WriteHint($"Venda: {sellThreshold:N2} | Compra: {buyThreshold:N2}");
+                    return 1;
+                }
+
                 var host = CreateHostBuilder(args).Build();
 
                 var emailService = host.Services.GetRequiredService<IEmailService>();
@@ -51,38 +61,27 @@ namespace StockQuoteAlert.Console
                     writer.WriteInfo("Validando configuração SMTP...");
                     await emailService.ValidateSmtpConfigurationAsync();
                     writer.WriteSuccess("Configuração SMTP válida.");
-                    System.Console.WriteLine();
+                    writer.WriteInfo("");
                 }
                 catch (Exception ex)
                 {
                     writer.WriteError($"Configuração SMTP inválida: {ex.Message}");
-                    System.Console.ForegroundColor = ConsoleColor.DarkGray;
-                    System.Console.WriteLine("  Verifique as configurações de e-mail no appsettings.json.");
-                    System.Console.ResetColor();
+                    writer.WriteHint("Verifique as configurações de e-mail no appsettings.json.");
                     return 1;
                 }
 
                 var monitoringService = host.Services.GetRequiredService<IMonitoringService>();
 
-                var assetDto = new MonitoredAssetDto
-                {
-                    Ticker = ticker,
-                    BuyThreshold = buyThreshold,
-                    SellThreshold = sellThreshold
-                };
+                var assetDto = new MonitoredAssetDto(ticker, buyThreshold, sellThreshold);
 
                 writer.WriteHeader(ticker, buyThreshold, sellThreshold);
 
-                System.Console.ForegroundColor = ConsoleColor.DarkGray;
-                System.Console.WriteLine("  Pressione Ctrl+C para encerrar o monitoramento.");
-                System.Console.ResetColor();
+                writer.WriteHint("Pressione Ctrl+C para encerrar o monitoramento.");
 
                 using var cts = new CancellationTokenSource();
                 System.Console.CancelKeyPress += (sender, e) =>
                 {
-                    System.Console.ForegroundColor = ConsoleColor.Cyan;
-                    System.Console.WriteLine("\nEncerrando monitoramento...");
-                    System.Console.ResetColor();
+                    writer.WriteShutdown("\nEncerrando monitoramento...");
                     e.Cancel = true;
                     cts.Cancel();
                 };
