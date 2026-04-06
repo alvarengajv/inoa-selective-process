@@ -27,12 +27,7 @@ public class MonitoringServiceTests
             loggerMock.Object);
     }
 
-    private static MonitoredAssetDto CreateDto() => new()
-    {
-        Ticker = "PETR4",
-        BuyThreshold = 10m,
-        SellThreshold = 20m
-    };
+    private static MonitoredAssetDto CreateDto() => new("PETR4", 10m, 20m);
 
     // ── Happy Path ───────────────────────────────────────────────────────────
 
