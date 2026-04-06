@@ -45,14 +45,14 @@ namespace StockQuoteAlert.Application.Services
                     var currentPrice = await _quoteService.GetQuoteAsync(asset.Ticker);
                     asset.UpdatePrice(currentPrice);
 
-                    _logger.LogInformation("[{Time}] {Ticker}: {Price:C}", DateTime.Now.ToString("HH:mm:ss"), asset.Ticker, currentPrice);
+                    _logger.LogInformation("[{Time}] {Ticker}: R$ {Price:N2}", DateTime.Now.ToString("HH:mm:ss"), asset.Ticker, currentPrice);
 
                     // Alerta de compra
                     if (asset.ShouldTriggerBuyAlert())
                     {
                         if (!buyAlertSent)
                         {
-                            await SendBuyAlertAsync(asset);
+                            await SendAlertAsync(asset, "Compra", "comprar", "abaixo", asset.BuyThreshold);
                             buyAlertSent = true;
                             sellAlertSent = false; // Resetar o alerta de venda
                         }
@@ -62,7 +62,7 @@ namespace StockQuoteAlert.Application.Services
                     {
                         if (!sellAlertSent)
                         {
-                            await SendSellAlertAsync(asset);
+                            await SendAlertAsync(asset, "Venda", "vender", "acima", asset.SellThreshold);
                             sellAlertSent = true;
                             buyAlertSent = false; // Resetar o alerta de compra
                         }
@@ -89,26 +89,15 @@ namespace StockQuoteAlert.Application.Services
             }
         }
 
-        private async Task SendBuyAlertAsync(MonitoredAsset asset)
+        private async Task SendAlertAsync(MonitoredAsset asset, string tipo, string acao, string direcao, decimal threshold)
         {
-            var subject = $"Alerta de Compra - {asset.Ticker}";
-            var body = $"O ativo {asset.Ticker} atingiu o preço de {asset.CurrentPrice:C}, " +
-                       $"que está abaixo ou igual ao limite de compra de {asset.BuyThreshold:C}. " +
-                       $"Considere comprar!";
+            var subject = $"Alerta de {tipo} - {asset.Ticker}";
+            var body = $"O ativo {asset.Ticker} atingiu o preço de R$ {asset.CurrentPrice:N2}, " +
+                       $"que está {direcao} ou igual ao limite de {tipo.ToLowerInvariant()} de R$ {threshold:N2}. " +
+                       $"Considere {acao}!";
 
             await _emailService.SendAlertAsync(subject, body);
-            _logger.LogInformation("Alerta de COMPRA enviado para {Ticker}", asset.Ticker);
-        }
-
-        private async Task SendSellAlertAsync(MonitoredAsset asset)
-        {
-            var subject = $"Alerta de Venda - {asset.Ticker}";
-            var body = $"O ativo {asset.Ticker} atingiu o preço de {asset.CurrentPrice:C}, " +
-                       $"que está acima ou igual ao limite de venda de {asset.SellThreshold:C}. " +
-                       $"Considere vender!";
-
-            await _emailService.SendAlertAsync(subject, body);
-            _logger.LogInformation("Alerta de VENDA enviado para {Ticker}", asset.Ticker);
+            _logger.LogInformation("Alerta de {Tipo} enviado para {Ticker}", tipo.ToUpperInvariant(), asset.Ticker);
         }
     }
 }
